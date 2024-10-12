@@ -44,6 +44,8 @@ dependencies:
   supabase_flutter: ^2.8.0
   timeago: ^3.7.0
   icons_launcher: ^3.0.0
+  flutter_dotenv: ^5.1.0
+  flutter_bloc: ^8.1.6
 
 icons_launcher:
   image_path: "assets/ic_launcher.png"
@@ -112,4 +114,5 @@ flutter:
   # see https://flutter.dev/custom-fonts/#from-packages
   assets:
     - assets/
+    - .env
 
