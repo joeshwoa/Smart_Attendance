@@ -5,11 +5,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:smart_attendance/cubit/app_cubit.dart';
+import 'package:smart_attendance/generated/assets.dart';
 import 'package:smart_attendance/screens/persons_screen.dart';
 import 'package:smart_attendance/screens/scan_qr_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:smart_attendance/model/person.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:url_launcher/url_launcher.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -77,7 +79,8 @@ class _MyHomePageState extends State<MyHomePage> {
   List<Widget> _buildScreens() {
     return [
       const ScanQrScreen(),
-      const PersonsScreen()
+      const PersonsScreen(),
+      const SizedBox()
     ];
   }
 
@@ -96,6 +99,32 @@ class _MyHomePageState extends State<MyHomePage> {
         activeColorPrimary: const Color(0xff4277FF),
         inactiveColorPrimary: const Color(0xff6F99FC),
         activeColorSecondary: const Color(0xffFFFFFE),
+      ),
+      PersistentBottomNavBarItem(
+        icon: Column(
+          children: [
+            const Text(
+              'Powered by',
+              style: TextStyle(color: Color(0xffFFFFFE), fontSize: 7,fontWeight: FontWeight.bold),
+            ),
+            Container(
+              width: 40,
+              height: 40,
+              padding: EdgeInsets.all(7),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.black
+              ),
+              child: const Image(image: AssetImage(Assets.assetsComindeLogo),fit: BoxFit.contain,)
+            ),
+          ],
+        ),
+        /*activeColorPrimary: const Color(0xff4277FF),
+        inactiveColorPrimary: const Color(0xff6F99FC),
+        activeColorSecondary: const Color(0xffFFFFFE),*/
+        onPressed: (context) => launchUrl(Uri.parse('https://cominde.onrender.com')),
+        onSelectedTabPressWhenNoScreensPushed: () => launchUrl(Uri.parse('https://cominde.onrender.com')),
+        contentPadding: 0
       ),
     ];
   }
@@ -203,7 +232,7 @@ class _MyHomePageState extends State<MyHomePage> {
         stateManagement: true, // Default is true.
         hideNavigationBarWhenKeyboardAppears: true,
         popBehaviorOnSelectedNavBarItemPress: PopBehavior.all,
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(0),
         backgroundColor: const Color(0xff101826),
         isVisible: true,
         animationSettings: const NavBarAnimationSettings(
@@ -218,7 +247,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ),
         confineToSafeArea: true,
-        navBarHeight: kBottomNavigationBarHeight+20,
+        navBarHeight: kBottomNavigationBarHeight+25,
         navBarStyle: NavBarStyle.style7,
         floatingActionButton: _controller.index==1?Padding(
           padding: const EdgeInsets.all(8.0),

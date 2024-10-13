@@ -46,6 +46,7 @@ dependencies:
   icons_launcher: ^3.0.0
   flutter_dotenv: ^5.1.0
   flutter_bloc: ^8.1.6
+  url_launcher: ^6.3.1
 
 icons_launcher:
   image_path: "assets/ic_launcher.png"
