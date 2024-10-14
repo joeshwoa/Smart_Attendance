@@ -110,8 +110,8 @@ class _MyHomePageState extends State<MyHomePage> {
             Container(
               width: 40,
               height: 40,
-              padding: EdgeInsets.all(7),
-              decoration: BoxDecoration(
+              padding: const EdgeInsets.all(7),
+              decoration: const BoxDecoration(
                 shape: BoxShape.circle,
                 color: Colors.black
               ),
@@ -131,6 +131,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _birthDateController = TextEditingController();
   final RegExp dateRegExp = RegExp(r'^\d{2}-\d{2}-\d{4}$');
 
@@ -405,6 +406,32 @@ class _MyHomePageState extends State<MyHomePage> {
                                   fontWeight: FontWeight.w400,
                                 ),
                                 keyboardType: TextInputType.streetAddress,
+                              ),
+                              const SizedBox(height: 8,),
+                              TextFormField(
+                                controller: _phoneController,
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: const BorderSide(color: Color(0xff4277FF))
+                                  ),
+                                  hintText: 'Phone',
+                                  focusColor: const Color(0xff4277FF),
+                                  hintStyle: TextStyle(
+                                    color: const Color(0xffFFFFFE).withOpacity(0.75),
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                                style: const TextStyle(
+                                  color: Color(0xffFFFFFE),
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                                keyboardType: TextInputType.phone,
                               ),
                               const Expanded(child: SizedBox()),
                               Align(

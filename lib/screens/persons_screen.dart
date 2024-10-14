@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'dart:ui';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -48,6 +48,7 @@ class _PersonsScreenState extends State<PersonsScreen> {
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _birthDateController = TextEditingController();
   final RegExp dateRegExp = RegExp(r'^\d{2}-\d{2}-\d{4}$');
 
@@ -167,8 +168,16 @@ class _PersonsScreenState extends State<PersonsScreen> {
         //print(file.path);
 
         // Create an image from the QR code
-        final picture = await qrPainter.toImage(300); // 300 is the image size
-        final byteData = await picture.toByteData(format: ImageByteFormat.png);
+        final ui.Image picture = await qrPainter.toImage(300); // 300 is the image size
+
+        // Add a border (padding) to the QR code image
+        const borderSize = 20.0; // 20px border
+        const borderColor = Color(0xff4277FF); // Border color other than black or white
+
+        // Create a canvas to draw the QR code with the border
+        final borderImage = await _addBorderToQRCode(picture, borderSize, borderColor);
+
+        final byteData = await borderImage.toByteData(format: ui.ImageByteFormat.png);
         await file.writeAsBytes(byteData!.buffer.asUint8List());
 
         // Share the file
@@ -190,6 +199,27 @@ class _PersonsScreenState extends State<PersonsScreen> {
       });
       calledAfterFinish();
     }
+  }
+
+  Future<ui.Image> _addBorderToQRCode(ui.Image qrImage, double borderSize, Color borderColor) async {
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+
+    // Define the size of the image with border
+    final size = Size(
+      qrImage.width.toDouble() + borderSize * 2,
+      qrImage.height.toDouble() + borderSize * 2,
+    );
+
+    // Draw the border background
+    final borderPaint = Paint()..color = borderColor;
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), borderPaint);
+
+    // Draw the QR code in the center
+    canvas.drawImage(qrImage, Offset(borderSize, borderSize), Paint());
+
+    final picture = recorder.endRecording();
+    return picture.toImage(size.width.toInt(), size.height.toInt());
   }
 
   @override
@@ -303,7 +333,7 @@ class _PersonsScreenState extends State<PersonsScreen> {
                             ],
                           ),
                           const SizedBox(height: 4,),
-                          Row(
+                          if(context.read<AppCubit>().persons[index].address != null && context.read<AppCubit>().persons[index].address!.isNotEmpty)Row(
                             children: [
                               const Text(
                                 'Address: ',
@@ -312,6 +342,20 @@ class _PersonsScreenState extends State<PersonsScreen> {
                               const SizedBox(width: 4,),
                               Text(
                                 context.read<AppCubit>().persons[index].address??'',
+                                style: const TextStyle(color: Color(0xffFFFFFE), fontSize: 18, fontWeight: FontWeight.w400),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4,),
+                          if(context.read<AppCubit>().persons[index].phone != null && context.read<AppCubit>().persons[index].phone!.isNotEmpty)Row(
+                            children: [
+                              const Text(
+                                'Phone: ',
+                                style: TextStyle(color: Color(0xff4277FF), fontSize: 18, fontWeight: FontWeight.w400),
+                              ),
+                              const SizedBox(width: 4,),
+                              Text(
+                                context.read<AppCubit>().persons[index].phone??'',
                                 style: const TextStyle(color: Color(0xffFFFFFE), fontSize: 18, fontWeight: FontWeight.w400),
                               ),
                             ],
@@ -330,7 +374,7 @@ class _PersonsScreenState extends State<PersonsScreen> {
                               ),
                               const Expanded(child: SizedBox()),
                               Text(
-                                timeago.format(context.read<AppCubit>().persons[index].lastAttendDate!, locale: 'en'),
+                                context.read<AppCubit>().persons[index].lastAttendDate!.day == (DateTime.now().subtract(const Duration(days: 1))).day ? 'yesterday' : timeago.format(context.read<AppCubit>().persons[index].lastAttendDate!, locale: 'en'),
                                 style: const TextStyle(color: Color(0xffFFFFFE), fontSize: 18, fontWeight: FontWeight.w400),
                               ),
                             ],
@@ -470,7 +514,7 @@ class _PersonsScreenState extends State<PersonsScreen> {
                           style: TextStyle(color: const Color(0xffFFFFFE), fontSize: 22, fontWeight: FontWeight.bold, shadows: [BoxShadow(color: const Color(0xffFFFFFE).withOpacity(0.75), blurRadius: 4,)]),
                         ),
                         if(context.read<AppCubit>().persons[index].lastAttendDate != null)Text(
-                          timeago.format(context.read<AppCubit>().persons[index].lastAttendDate!, locale: 'en'),
+                          context.read<AppCubit>().persons[index].lastAttendDate!.day == (DateTime.now().subtract(const Duration(days: 1))).day ? 'yesterday' : timeago.format(context.read<AppCubit>().persons[index].lastAttendDate!, locale: 'en'),
                           style: const TextStyle(color: Color(0xffFFFFFE), fontSize: 18, fontWeight: FontWeight.w400),
                         ),
                       ],
@@ -480,6 +524,7 @@ class _PersonsScreenState extends State<PersonsScreen> {
                       onTap: () {
                         _nameController.text = context.read<AppCubit>().persons[index].name??'';
                         _addressController.text = context.read<AppCubit>().persons[index].address??'';
+                        _phoneController.text = context.read<AppCubit>().persons[index].phone??'';
                         _birthDateController.text = context.read<AppCubit>().persons[index].birthDate != null ? DateFormat('dd-MM-yyyy').format(context.read<AppCubit>().persons[index].birthDate!) : '';
                         showDialog(context: context, builder: (context) => StatefulBuilder(
                             builder: (context, innerSetState) {
@@ -634,6 +679,32 @@ class _PersonsScreenState extends State<PersonsScreen> {
                                             ),
                                             keyboardType: TextInputType.streetAddress,
                                           ),
+                                          const SizedBox(height: 8,),
+                                          TextFormField(
+                                            controller: _phoneController,
+                                            decoration: InputDecoration(
+                                              border: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                              focusedBorder: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderSide: const BorderSide(color: Color(0xff4277FF))
+                                              ),
+                                              hintText: 'Phone',
+                                              focusColor: const Color(0xff4277FF),
+                                              hintStyle: TextStyle(
+                                                color: const Color(0xffFFFFFE).withOpacity(0.75),
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w400,
+                                              ),
+                                            ),
+                                            style: const TextStyle(
+                                              color: Color(0xffFFFFFE),
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w400,
+                                            ),
+                                            keyboardType: TextInputType.phone,
+                                          ),
                                           const Expanded(child: SizedBox()),
                                           Align(
                                             alignment: Alignment.bottomRight,
@@ -647,6 +718,7 @@ class _PersonsScreenState extends State<PersonsScreen> {
                                                   context.read<AppCubit>().persons[index].name = _nameController.text;
                                                   context.read<AppCubit>().persons[index].birthDate = convertToDateTime(_birthDateController.text);
                                                   context.read<AppCubit>().persons[index].address = _addressController.text;
+                                                  context.read<AppCubit>().persons[index].phone = _phoneController.text;
                                                   //print(context.read<AppCubit>().persons[index].toJsonWithoutID());
                                                   await supabase
                                                       .from('people')
